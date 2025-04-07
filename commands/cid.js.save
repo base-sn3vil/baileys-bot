@@ -1,0 +1,35 @@
+const axios = require('axios');
+
+module.exports = {
+    name: 'cid',
+    aliases: ['iid'],
+   d   cooldown: 3,
+    async execute(sock, msg, text, from) {
+        const cleanedText = text.split(/\s+/).slice(1).join('').replace(/[^0-9]/g, '');
+        if (!cleanedText) {
+            await sock.sendMessage(from, { text: '❌ Please provide a valid Installation ID.' });
+            return;
+        }
+
+        const apiKey = 't4CxiApPE1rjncOfuQHcD6F74';
+        const url = `https://pidkey.com/ajax/cidms_api?iids=${cleanedText}&justforcheck=1&apikey=${apiKey}`;
+
+        try {
+            const { data } = await axios.get(url);
+            if (data?.have_cid) {
+                await sock.sendMessage(from, {
+                    text: `✅ *CID Found!*\n\nCID:\n${data.confirmation_id_with_dash}\nChecked: ${data.result}`
+                });
+            } else {
+                await sock.sendMessage(from, {
+                    text: `🔍 *CID Check Result:*\nStatus: ${data.result || 'Unknown'}\nChecked: ${data.typeiid == 1 ? 'Retail' : 'Unknown'}`
+                });
+            }
+        } catch (err) {
+            console.error('❌ Error in cid:', err);
+            await sock.sendMessage(from, {
+                text: '⚠️ Error occurred while checking CID. Please try again later.'
+            });
+        }
+    }
+};
